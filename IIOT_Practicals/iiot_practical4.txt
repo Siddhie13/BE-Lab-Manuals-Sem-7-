@@ -1,0 +1,51 @@
+//EXPERIMENT 4 
+
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* ssid = "Wokwi-GUEST";   // WiFi SSID
+const char* password = "";          // WiFi Password (none for Wokwi)
+
+const int potPin = 34;              // Potentiometer connected to GPIO 34
+int potValue = 0;                   // Variable to store potentiometer value
+
+WebServer server(80);               // Create web server on port 80
+
+// Function to handle root webpage
+void handleRoot() {
+  potValue = analogRead(potPin);   // Read potentiometer
+  String html = "<!DOCTYPE html><html><head><meta http-equiv='refresh' content='1'>";
+  html += "<title>ESP32 Potentiometer Web Server</title></head>";
+  html += "<body style='font-family: Arial; text-align:center;'>";
+  html += "<h1>ESP32 Web Server</h1>";
+  html += "<h2>Potentiometer Value: ";
+  html += String(potValue);
+  html += "</h2><p>Page refreshes every 1 second.</p>";
+  html += "</body></html>";
+
+  server.send(200, "text/html", html);
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nConnected!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  pinMode(potPin, INPUT);          // Set potentiometer pin
+  server.on("/", handleRoot);      // Route handler
+  server.begin();                  // Start server
+  Serial.println("Server started!");
+}
+
+void loop() {
+  server.handleClient();           // Handle incoming requests
+}

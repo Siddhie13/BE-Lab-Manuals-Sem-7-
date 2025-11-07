@@ -1,0 +1,22 @@
+//EXPERIMENT 2
+
+// PIR Sensor with Arduino - Motion Detection Experiment
+int pirPin = 2;     // PIR sensor output connected to digital pin 2
+int ledPin = 13;    // LED connected to pin 13 (built-in LED)
+void setup() {
+  pinMode(pirPin, INPUT);   // Set PIR pin as input
+  pinMode(ledPin, OUTPUT);  // Set LED pin as output
+  Serial.begin(9600);       // Start Serial monitor for debugging
+  Serial.println("PIR Sensor Test Initialized...");
+}
+void loop() {
+  int motionState = digitalRead(pirPin);  // Read PIR sensor state
+  if (motionState == HIGH) {
+    digitalWrite(ledPin, HIGH);          // Turn LED ON
+    Serial.println("Motion detected!");  // Print alert
+  } else {
+    digitalWrite(ledPin, LOW);           // Turn LED OFF
+    Serial.println("No motion");         // Print status
+  }
+  delay(1000); // Delay 1 second
+}

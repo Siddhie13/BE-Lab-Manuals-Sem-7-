@@ -1,0 +1,70 @@
+// EXPERIMENT 3
+
+#include <WiFi.h>
+
+// Replace with your Wi-Fi credentials (Wokwi provides simulated WiFi)
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+
+const int ledPin = 5;  // LED connected to GPIO 5
+
+WiFiServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  // Connect to Wi-Fi
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.begin();
+}
+
+void loop() {
+  // --- Serial Monitor Control ---
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+    if (cmd.equalsIgnoreCase("ON")) {
+      digitalWrite(ledPin, HIGH);
+      Serial.println("LED Turned ON (via Serial)");
+    } else if (cmd.equalsIgnoreCase("OFF")) {
+      digitalWrite(ledPin, LOW);
+      Serial.println("LED Turned OFF (via Serial)");
+    }
+  }
+
+  // --- Web Server Control ---
+  WiFiClient client = server.available();
+  if (client) {
+    String request = client.readStringUntil('\r');
+    client.flush();
+
+    if (request.indexOf("/ON") != -1) {
+      digitalWrite(ledPin, HIGH);
+    } else if (request.indexOf("/OFF") != -1) {
+      digitalWrite(ledPin, LOW);
+    }
+
+    // Simple Webpage Response
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-type:text/html");
+    client.println();
+    client.println("<h1>ESP32 CPS Control</h1>");
+    client.println("<p><a href=\"/ON\"><button>Turn ON</button></a></p>");
+    client.println("<p><a href=\"/OFF\"><button>Turn OFF</button></a></p>");
+    client.println();
+    client.stop();
+  }
+}
